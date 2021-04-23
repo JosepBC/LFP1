@@ -3,12 +3,27 @@
 %{
   #include <stdlib.h>
   #include <stdio.h>
+  #include <string.h>
   
   int n_tags_open = 0;
   int n_tags_close = 0;
   int n_elem_simple = 0;
   int n_elem_empty = 0;
   int n_elem_attributs = 0;
+
+  char tags_iguales(char *yytext) {
+    char *yytext_copy = (char*)calloc(sizeof(yytext), sizeof(char));
+    strcpy(yytext_copy, yytext);
+    char *t = strtok(yytext, "<"); //Eliminem <
+    char *open_name = strtok(t, " >"); //Ens quedem amb el que hi havia entre < i > o el primer espai, per si hi ha atributs
+
+    char *close = strtok(yytext_copy, "</");
+    close = strtok(NULL, "</"); //Agafem el tag que tanca tag>
+    char *close_name = strtok(close, ">"); //Eliminem el > i ens quedem amb nomes el tag
+    int cmp = strcmp(open_name, close_name);
+    free(yytext_copy);
+    return cmp == 0; //Si son iguals strcmp retorna 0
+  }
 %}
 
 nombre_tag              [a-zA-Z0-9_]
@@ -23,45 +38,62 @@ tag_apertura            ({tag_apertura_atributo}|{apertura_simple})
 
 %%
 {tag_apertura_atributo}{texto}{cierre} {
-    n_elem_attributs++; 
+    
     n_tags_open++; 
     n_tags_close++; 
-    printf("Elem con atributo\n");
+    printf("Elem con atributo: %s\n", yytext);
+
+    if(tags_iguales(yytext)) {
+        printf("Tags ok\n");
+        n_elem_attributs++; 
+    } else printf("Bad tags");
+
 }
 
 {apertura_simple}{texto}{cierre} {
-    n_elem_simple++; 
     n_tags_open++; 
     n_tags_close++; 
-    printf("Elem simple\n");
+
+    printf("Elem simple: %s\n", yytext);
+    if(tags_iguales(yytext)) {
+        printf("Tags ok\n");
+        n_elem_simple++; 
+    } else printf("Bad tags");
 }
 
 {tag_apertura_atributo}{cierre} {
-    n_elem_attributs++; 
-    n_elem_empty++;
     n_tags_open++; 
     n_tags_close++;
-    printf("Elem con atributo y vacio\n");
+    
+    printf("Elem con atributo y vacio: %s\n", yytext);
+    if(tags_iguales(yytext)) {
+        printf("Tags ok\n");
+        n_elem_attributs++; 
+        n_elem_empty++;
+    } else printf("Bad tags");
  }
 
 {apertura_simple}{cierre} {
-    n_elem_empty++;
     n_tags_open++; 
     n_tags_close++; 
-    printf("Elem vacio\n");
+    
+    printf("Elem vacio: %s\n", yytext);
+    if(tags_iguales(yytext)) {
+        printf("Tags ok\n");
+        n_elem_empty++;
+    } else printf("Bad tags");
 }
 
-{tag_apertura_atributo}               {n_tags_open++; printf("Tag apertura atributo\n");}
-{espacio}+                            {printf("Espacio, tab, enter\n");}
-{texto}                               {printf("Texto\n");}
-{apertura_simple}                     {n_tags_open++; printf("Apertura simple\n");}
+{tag_apertura} {
+    n_tags_open++;
+    //printf("Tag abertura: %s\n", yytext);
+}
 
 {cierre} {
     n_tags_close++; 
-    printf("Cierre\n");
+    //printf("Cierre\n");
 }
-
-{atributo}                  {printf("Atributo\n");}
+. {}
 
 %%
 
