@@ -38,50 +38,38 @@ tag_apertura            ({tag_apertura_atributo}|{apertura_simple})
 
 %%
 {tag_apertura_atributo}{texto}{cierre} {
-    
     n_tags_open++; 
     n_tags_close++; 
-    printf("Elem con atributo: %s\n", yytext);
+    //printf("Elem con atributo: %s\n", yytext);
 
-    if(tags_iguales(yytext)) {
-        printf("Tags ok\n");
-        n_elem_attributs++; 
-    } else printf("Bad tags");
-
+    if(tags_iguales(yytext)) n_elem_attributs++; 
 }
 
 {apertura_simple}{texto}{cierre} {
     n_tags_open++; 
     n_tags_close++; 
 
-    printf("Elem simple: %s\n", yytext);
-    if(tags_iguales(yytext)) {
-        printf("Tags ok\n");
-        n_elem_simple++; 
-    } else printf("Bad tags");
+    //printf("Elem simple: %s\n", yytext);
+    if(tags_iguales(yytext)) n_elem_simple++; 
 }
 
 {tag_apertura_atributo}{cierre} {
     n_tags_open++; 
     n_tags_close++;
     
-    printf("Elem con atributo y vacio: %s\n", yytext);
+    //printf("Elem con atributo y vacio: %s\n", yytext);
     if(tags_iguales(yytext)) {
-        printf("Tags ok\n");
         n_elem_attributs++; 
         n_elem_empty++;
-    } else printf("Bad tags");
+    }
  }
 
 {apertura_simple}{cierre} {
     n_tags_open++; 
     n_tags_close++; 
     
-    printf("Elem vacio: %s\n", yytext);
-    if(tags_iguales(yytext)) {
-        printf("Tags ok\n");
-        n_elem_empty++;
-    } else printf("Bad tags");
+    //printf("Elem vacio: %s\n", yytext);
+    if(tags_iguales(yytext)) n_elem_empty++;
 }
 
 {tag_apertura} {
@@ -93,6 +81,9 @@ tag_apertura            ({tag_apertura_atributo}|{apertura_simple})
     n_tags_close++; 
     //printf("Cierre\n");
 }
+
+{espacio}+ {}
+
 . {}
 
 %%
@@ -105,9 +96,9 @@ int main(int argc, char **argv) {
         }
     }
     yylex();
-    printf("Numero de tags de apertura %i\n", n_tags_open);
-    printf("Numero de tags de cierre %i\n", n_tags_close);
-    printf("Numero de elementos simples %i\n", n_elem_simple);
-    printf("Numero de elementos vacios %i\n", n_elem_empty);
-    printf("Numero de elementos con atributos %i\n", n_elem_attributs);
+    printf("Numero de tags de apertura: %i\n", n_tags_open);
+    printf("Numero de tags de cierre: %i\n", n_tags_close);
+    printf("Numero de elementos simples: %i\n", n_elem_simple);
+    printf("Numero de elementos vacios: %i\n", n_elem_empty);
+    printf("Numero de elementos con atributos: %i\n", n_elem_attributs);
 }
